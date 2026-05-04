@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TokoKu — Belanja Mudah</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Midtrans Snap.js Sandbox -->
+  <script src="https://app.sandbox.midtrans.com/snap/snap.js"
+          data-client-key="SB-Mid-client-A0pgB3xD3qluqxrj"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --card: #1a1a26;
+      --border: #2a2a3a;
+      --accent: #00e5a0;
+      --accent2: #7c6fff;
+      --text: #e8e8f0;
+      --muted: #8888aa;
+      --warn: #ffb300;
+      --font: 'Sora', sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 80% 10%, rgba(124,111,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 10% 80%, rgba(0,229,160,0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(10,10,15,0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
+    .logo span { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 0.8rem; }
+
+    .sandbox-badge {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      background: rgba(255,179,0,0.12);
+      border: 1px solid rgba(255,179,0,0.35);
+      color: var(--warn);
+      padding: 0.25rem 0.6rem;
+      border-radius: 99px;
+      letter-spacing: 0.05em;
+    }
+
+    .cart-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.55rem 1.2rem;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 0.5rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .cart-btn:hover { border-color: var(--accent); background: rgba(0,229,160,0.06); }
+    .cart-badge {
+      background: var(--accent); color: #000;
+      font-size: 0.7rem; font-weight: 700;
+      padding: 1px 6px; border-radius: 99px;
+      min-width: 20px; text-align: center;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: var(--mono); font-size: 0.78rem;
+      color: var(--accent);
+      border: 1px solid rgba(0,229,160,0.3);
+      padding: 0.3rem 0.8rem; border-radius: 99px;
+      margin-bottom: 1.2rem; letter-spacing: 0.06em;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent2); }
+    .hero p { color: var(--muted); max-width: 480px; margin: 0 auto; font-size: 1rem; line-height: 1.7; }
+
+    /* ── SECTION ── */
+    .section {
+      position: relative; z-index: 1;
+      max-width: 1100px; margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+    }
+    .section-title {
+      font-size: 1.5rem; font-weight: 700;
+      margin-bottom: 2rem; letter-spacing: -0.02em;
+    }
+    .section-title span { color: var(--accent); }
+
+    /* ── GRID ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.5s ease both;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,229,160,0.4);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(20px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .card-img {
+      width: 100%; aspect-ratio: 4/3;
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem;
+    }
+    .card-body { padding: 1.2rem; }
+    .card-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.4rem; }
+    .card-desc { color: var(--muted); font-size: 0.82rem; margin-bottom: 1rem; line-height: 1.5; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .card-price { font-family: var(--mono); font-size: 1rem; font-weight: 500; color: var(--accent); }
+    .add-btn {
+      background: var(--accent); color: #000;
+      border: none; padding: 0.5rem 1rem; border-radius: 8px;
+      font-family: var(--font); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .add-btn:hover { opacity: 0.85; }
+    .add-btn:active { transform: scale(0.95); }
+
+    /* ── CART DRAWER ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+      z-index: 200; animation: fadeIn 0.2s ease;
+    }
+    .overlay.open { display: flex; align-items: flex-end; justify-content: center; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+    .cart-drawer {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 520px;
+      padding: 2rem; max-height: 85vh; overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity:0; }
+      to   { transform: translateY(0); opacity:1; }
+    }
+
+    .drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .drawer-title { font-size: 1.2rem; font-weight: 700; }
+    .close-btn {
+      background: var(--border); border: none; color: var(--text);
+      width: 32px; height: 32px; border-radius: 50%;
+      cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .cart-item {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 0; border-bottom: 1px solid var(--border);
+    }
+    .ci-icon { font-size: 2rem; min-width: 44px; text-align: center; }
+    .ci-info { flex: 1; }
+    .ci-name { font-weight: 600; font-size: 0.9rem; }
+    .ci-price { color: var(--muted); font-family: var(--mono); font-size: 0.82rem; margin-top: 2px; }
+    .ci-qty { display: flex; align-items: center; gap: 0.5rem; }
+    .qty-btn {
+      background: var(--border); border: none; color: var(--text);
+      width: 28px; height: 28px; border-radius: 6px;
+      cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .qty-btn:hover { background: var(--accent); color: #000; }
+    .qty-num { font-family: var(--mono); font-size: 0.9rem; min-width: 20px; text-align: center; }
+
+    .cart-empty { text-align: center; color: var(--muted); padding: 3rem 0; font-size: 0.9rem; }
+
+    .cart-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);
+    }
+    .total-label { font-weight: 600; }
+    .total-amount { font-family: var(--mono); font-size: 1.2rem; color: var(--accent); }
+
+    .pay-btn {
+      width: 100%; margin-top: 1.2rem; padding: 1rem;
+      background: var(--accent); color: #000; border: none;
+      border-radius: 12px; font-family: var(--font);
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .pay-btn:hover { opacity: 0.88; }
+    .pay-btn:active { transform: scale(0.98); }
+    .pay-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ── FORM MODAL ── */
+    .form-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      z-index: 300; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .form-modal.open { display: flex; }
+
+    .form-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2rem;
+      width: 100%; max-width: 440px;
+      animation: fadeUp 0.3s ease;
+    }
+    .form-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.2rem; }
+
+    .test-card-box {
+      background: rgba(255,179,0,0.07);
+      border: 1px solid rgba(255,179,0,0.25);
+      border-radius: 10px; padding: 0.9rem 1rem;
+      margin-bottom: 1.2rem;
+      font-size: 0.8rem; color: var(--muted); line-height: 1.7;
+    }
+    .test-card-box strong { color: var(--warn); display: block; margin-bottom: 0.3rem; }
+    .test-card-box code {
+      background: rgba(255,179,0,0.1);
+      color: var(--warn); padding: 1px 5px; border-radius: 4px;
+      font-family: var(--mono);
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-group input {
+      width: 100%;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); padding: 0.7rem 1rem;
+      border-radius: 10px; font-family: var(--font); font-size: 0.9rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--accent); }
+
+    .form-actions { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+    .btn-cancel {
+      flex: 1; padding: 0.8rem;
+      background: var(--border); border: none; color: var(--text);
+      border-radius: 10px; font-family: var(--font); font-size: 0.9rem; cursor: pointer;
+    }
+    .btn-submit {
+      flex: 2; padding: 0.8rem;
+      background: var(--accent2); border: none; color: #fff;
+      border-radius: 10px; font-family: var(--font);
+      font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-submit:hover { opacity: 0.85; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); padding: 0.7rem 1.4rem;
+      border-radius: 99px; font-size: 0.85rem;
+      z-index: 999; transition: transform 0.3s ease, opacity 0.3s;
+      opacity: 0; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--accent); }
+    .toast.error { border-color: #ff4d6d; }
+
+    /* ── ORDER STATUS ── */
+    .status-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      z-index: 400; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .status-modal.open { display: flex; }
+    .status-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.5rem 2rem;
+      width: 100%; max-width: 400px; text-align: center;
+      animation: fadeUp 0.3s ease;
+    }
+    .status-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .status-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .status-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.6; }
+    .status-order {
+      font-family: var(--mono); font-size: 0.8rem;
+      color: var(--accent); background: rgba(0,229,160,0.08);
+      border: 1px solid rgba(0,229,160,0.2);
+      padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1.5rem;
+      display: inline-block;
+    }
+    .btn-ok {
+      width: 100%; padding: 0.9rem;
+      background: var(--accent); color: #000; border: none;
+      border-radius: 10px; font-family: var(--font);
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    }
+
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 2rem;
+      color: var(--muted); font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Toko<span>Ku</span></div>
+  <div class="nav-right">
+    <span class="sandbox-badge">SANDBOX</span>
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Keranjang
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">✦ Powered by Midtrans Payment Gateway</div>
+  <h1>Belanja <em>Lebih Mudah</em><br>Bayar Lebih Aman</h1>
+  <p>Toko online modern dengan berbagai metode pembayaran — transfer bank, kartu kredit, QRIS, e-wallet, dan lebih banyak lagi.</p>
+</div>
+
+<!-- PRODUCTS -->
+<div class="section">
+  <h2 class="section-title">Produk <span>Pilihan</span></h2>
+  <div class="grid" id="productGrid"></div>
+</div>
+
+<!-- CART OVERLAY -->
+<div class="overlay" id="cartOverlay" onclick="closeCartOnBg(event)">
+  <div class="cart-drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">🛒 Keranjang Belanja</span>
+      <button class="close-btn" onclick="closeCart()">✕</button>
+    </div>
+    <div id="cartItems"></div>
+    <div id="cartSummary"></div>
+  </div>
+</div>
+
+<!-- FORM MODAL -->
+<div class="form-modal" id="formModal">
+  <div class="form-box">
+    <div class="form-title">📦 Data Pembeli</div>
+    <div class="test-card-box">
+      <strong>🧪 Mode Sandbox — Kartu Uji Midtrans</strong>
+      Nomor: <code>4811 1111 1111 1114</code><br>
+      Expired: bulan &amp; tahun depan &nbsp;|&nbsp; CVV: <code>123</code><br>
+      OTP/3DS: <code>112233</code>
+    </div>
+    <div class="form-group">
+      <label>Nama Lengkap *</label>
+      <input type="text" id="custName" placeholder="Budi Santoso" autocomplete="name" />
+    </div>
+    <div class="form-group">
+      <label>Email *</label>
+      <input type="email" id="custEmail" placeholder="budi@email.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label>No. Telepon *</label>
+      <input type="tel" id="custPhone" placeholder="08123456789" autocomplete="tel" />
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeForm()">Batal</button>
+      <button class="btn-submit" id="submitBtn" onclick="submitOrder()">
+        <div class="spinner" id="spinner"></div>
+        <span id="submitText">Bayar Sekarang →</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS MODAL -->
+<div class="status-modal" id="statusModal">
+  <div class="status-box">
+    <div class="status-icon" id="statusIcon">✅</div>
+    <div class="status-title" id="statusTitle">Pembayaran Berhasil!</div>
+    <div class="status-sub" id="statusSub">Terima kasih telah berbelanja di TokoKu.</div>
+    <div class="status-order" id="statusOrder"></div>
+    <button class="btn-ok" onclick="closeStatus()">Kembali Belanja</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  © 2025 TokoKu &nbsp;|&nbsp; Pembayaran aman diproses oleh <a href="https://midtrans.com" target="_blank">Midtrans</a>
+</footer>
+
+<script>
+// ── DATA PRODUK ──
+const products = [
+  { id: 1, icon: '💻', name: 'Laptop Gaming Pro', desc: 'RTX 4060, RAM 16GB, SSD 512GB. Performa tinggi untuk gaming & kerja.', price: 12500000 },
+  { id: 2, icon: '📱', name: 'Smartphone Ultra', desc: 'Layar AMOLED 6.7", kamera 200MP, baterai 5000mAh.', price: 8750000 },
+  { id: 3, icon: '🎧', name: 'Headphone Noise Cancel', desc: 'Suara jernih, ANC premium, baterai 40 jam. Nyaman seharian.', price: 1950000 },
+  { id: 4, icon: '⌚', name: 'Smartwatch Fitness', desc: 'Monitor detak jantung, GPS built-in, tahan air, notifikasi pintar.', price: 2200000 },
+  { id: 5, icon: '🖥️', name: 'Monitor 4K IPS 27"', desc: 'Panel IPS 144Hz, warna akurat, teknologi eye-care.', price: 4300000 },
+  { id: 6, icon: '🎮', name: 'Controller Wireless', desc: 'Kompatibel PC & console, haptic feedback, baterai 30 jam.', price: 850000 },
+];
+
+let cart = [];
+const fmt = n => 'Rp ' + n.toLocaleString('id-ID');
+
+// ── RENDER PRODUK ──
+function renderProducts() {
+  document.getElementById('productGrid').innerHTML = products.map((p, i) => `
+    <div class="card" style="animation-delay:${i * 0.07}s">
+      <div class="card-img">${p.icon}</div>
+      <div class="card-body">
+        <div class="card-name">${p.name}</div>
+        <div class="card-desc">${p.desc}</div>
+        <div class="card-footer">
+          <div class="card-price">${fmt(p.price)}</div>
+          <button class="add-btn" onclick="addToCart(${p.id})">+ Keranjang</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── CART ──
+function addToCart(id) {
+  const p = products.find(p => p.id === id);
+  const ex = cart.find(c => c.id === id);
+  if (ex) ex.qty++; else cart.push({ ...p, qty: 1 });
+  updateBadge();
+  showToast(`${p.icon} ${p.name} ditambahkan!`, 'success');
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(c => c.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
+  renderCart(); updateBadge();
+}
+
+function updateBadge() {
+  document.getElementById('cartBadge').textContent = cart.reduce((s, c) => s + c.qty, 0);
+}
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  const summary = document.getElementById('cartSummary');
+
+  if (!cart.length) {
+    container.innerHTML = '<div class="cart-empty">Keranjang masih kosong 🛒</div>';
+    summary.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="ci-icon">${item.icon}</div>
+      <div class="ci-info">
+        <div class="ci-name">${item.name}</div>
+        <div class="ci-price">${fmt(item.price)} × ${item.qty} = ${fmt(item.price * item.qty)}</div>
+      </div>
+      <div class="ci-qty">
+        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+
+  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  summary.innerHTML = `
+    <div class="cart-total-row">
+      <span class="total-label">Total</span>
+      <span class="total-amount">${fmt(total)}</span>
+    </div>
+    <button class="pay-btn" onclick="openForm()">💳 Lanjut Pembayaran</button>
+  `;
+}
+
+function openCart()  { renderCart(); document.getElementById('cartOverlay').classList.add('open'); }
+function closeCart() { document.getElementById('cartOverlay').classList.remove('open'); }
+function closeCartOnBg(e) { if (e.target.id === 'cartOverlay') closeCart(); }
+
+function openForm()  { if (!cart.length) return; closeCart(); document.getElementById('formModal').classList.add('open'); }
+function closeForm() { document.getElementById('formModal').classList.remove('open'); }
+
+// ── SUBMIT ORDER → BACKEND → MIDTRANS ──
+async function submitOrder() {
+  const name  = document.getElementById('custName').value.trim();
+  const email = document.getElementById('custEmail').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+
+  if (!name || !email || !phone) {
+    showToast('⚠️ Lengkapi semua data!', 'error');
+    return;
+  }
+  if (!email.includes('@')) {
+    showToast('⚠️ Format email tidak valid', 'error');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    // 1. Request snap_token dari backend
+    const res = await fetch('/api/create-transaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: { name, email, phone },
+        items: cart.map(c => ({
+          id: c.id,
+          name: c.name,
+          price: c.price,
+          quantity: c.qty
+        }))
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) throw new Error(data.message || 'Gagal membuat transaksi');
+
+    setLoading(false);
+    closeForm();
+
+    // 2. Buka Midtrans Snap popup
+    window.snap.pay(data.snap_token, {
+      onSuccess: function(result) {
+        showStatus('success', data.order_id, result.payment_type);
+        cart = []; updateBadge();
+      },
+      onPending: function(result) {
+        showStatus('pending', data.order_id, result.payment_type);
+        cart = []; updateBadge();
+      },
+      onError: function(result) {
+        showStatus('error', data.order_id, '');
+      },
+      onClose: function() {
+        showToast('💡 Pembayaran dibatalkan', '');
+      }
+    });
+
+  } catch (err) {
+    setLoading(false);
+    showToast('❌ Error: ' + err.message, 'error');
+    console.error(err);
+  }
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('spinner');
+  const text = document.getElementById('submitText');
+  btn.disabled = on;
+  spinner.style.display = on ? 'block' : 'none';
+  text.textContent = on ? 'Memproses...' : 'Bayar Sekarang →';
+}
+
+// ── STATUS MODAL ──
+function showStatus(type, orderId, paymentType) {
+  const icons   = { success: '🎉', pending: '⏳', error: '❌' };
+  const titles  = { success: 'Pembayaran Berhasil!', pending: 'Menunggu Pembayaran', error: 'Pembayaran Gagal' };
+  const subs    = {
+    success: `Pesanan kamu sedang diproses. Metode: ${paymentType || '-'}`,
+    pending: 'Selesaikan pembayaran sesuai instruksi yang dikirim ke email kamu.',
+    error: 'Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi.'
+  };
+
+  document.getElementById('statusIcon').textContent  = icons[type];
+  document.getElementById('statusTitle').textContent = titles[type];
+  document.getElementById('statusSub').textContent   = subs[type];
+  document.getElementById('statusOrder').textContent = orderId ? `Order ID: ${orderId}` : '';
+  document.getElementById('statusModal').classList.add('open');
+}
+
+function closeStatus() {
+  document.getElementById('statusModal').classList.remove('open');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──
+renderProducts();
+</script>
+</body>
+</html>
