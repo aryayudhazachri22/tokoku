@@ -12,7 +12,6 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "midtrans-client": "^1.4.3",
-    "uuid": "^14.0.0"
+    "midtrans-client": "^1.4.3"
   }
 }

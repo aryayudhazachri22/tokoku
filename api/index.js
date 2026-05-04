@@ -1,7 +1,6 @@
 const express = require('express');
 const midtransClient = require('midtrans-client');
 const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 const app = express();
@@ -22,7 +21,7 @@ app.post('/api/create-transaction', async (req, res) => {
     const { customer, items } = req.body;
 
     const grossAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const orderId = 'TOKOKU-' + Date.now() + '-' + uuidv4().slice(0, 6).toUpperCase();
+    const orderId = 'TOKOKU-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
 
     const parameter = {
       transaction_details: {
