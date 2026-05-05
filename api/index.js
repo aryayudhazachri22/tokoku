@@ -11,8 +11,15 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // ── MIDTRANS SNAP CLIENT ──
 const snap = new midtransClient.Snap({
   isProduction: false,
-  serverKey: 'SB-Mid-server-WXo6rZyzGRJP9ga6U3HauDD4',
-  clientKey: 'SB-Mid-client-A0pgB3xD3qluqxrj'
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+  clientKey: process.env.MIDTRANS_CLIENT_KEY
+});
+
+// server.js
+app.get('/', (req, res) => {
+  res.render('index', { 
+    midtransKey: process.env.MIDTRANS_CLIENT_KEY 
+  });
 });
 
 // ── CREATE TRANSACTION ──
